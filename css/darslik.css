@@ -1,0 +1,81 @@
+/* Yarimo'tkazgich asboblar fizikasi — ichki sahifalar uchun komponentlar.
+   Asosiy ranglar va shriftlar styles.css dagi ILIMZIYO dizaynidan olingan. */
+:root { --amber:#fbbf24; --violet:#a78bfa; --rose:#fb7185; }
+body { line-height:1.6; }
+.skip-link { position:absolute; left:-999px; top:0; background:#2563eb; color:#fff; padding:.6rem 1rem; border-radius:0 0 10px 0; z-index:50; }
+.skip-link:focus { left:0; }
+.page-hero { padding:3.6rem 0 2.6rem; border-bottom:1px solid var(--line); position:relative; overflow:hidden; isolation:isolate; }
+.page-hero::after { content:""; position:absolute; width:26rem; height:26rem; right:-6rem; top:-6rem; z-index:-1; border-radius:50%; background:radial-gradient(circle,#0ea5e92b,transparent 67%); }
+.page-hero h1 { font-size:clamp(1.8rem,4vw,3.1rem); letter-spacing:-.04em; margin:.7rem 0 1rem; max-width:1000px; }
+.crumbs { display:flex; flex-wrap:wrap; gap:.4rem; color:var(--muted); font-size:.78rem; }
+.crumbs a { color:#93c5fd; } .crumbs a:hover { text-decoration:underline; }
+.chips { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:1rem; }
+.chip { display:inline-flex; gap:.35rem; align-items:center; padding:.32rem .65rem; border-radius:999px; border:1px solid var(--line); background:#0d1628; color:#cbd5e1; font:600 .72rem 'JetBrains Mono',monospace; }
+.chip.c { border-color:#0891b277; color:#67e8f9; } .chip.g { border-color:#05966977; color:#6ee7b7; } .chip.a { border-color:#d9770677; color:#fcd34d; } .chip.v { border-color:#7c3aed77; color:#c4b5fd; }
+.doc-layout { display:grid; grid-template-columns:250px minmax(0,1fr); gap:1.6rem; padding:2.2rem 0 3rem; }
+.toc { position:sticky; top:84px; align-self:start; max-height:calc(100vh - 100px); overflow:auto; background:linear-gradient(145deg,rgba(17,29,51,.86),rgba(10,18,34,.94)); border:1px solid var(--line); border-radius:16px; padding:1rem; }
+.toc h2 { font:700 .7rem 'JetBrains Mono',monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--cyan); margin:0 0 .6rem; }
+.toc ol { list-style:none; margin:0; padding:0; counter-reset:t; }
+.toc li a { display:block; padding:.38rem .5rem; border-radius:8px; color:#b6c3d6; font-size:.8rem; border-left:2px solid transparent; }
+.toc li a:hover, .toc li a.on { background:#17243b; color:#fff; border-left-color:var(--cyan); }
+.doc { min-width:0; display:flex; flex-direction:column; gap:1.2rem; }
+.doc-sec { scroll-margin-top:90px; background:linear-gradient(145deg,rgba(17,29,51,.82),rgba(10,18,34,.94)); border:1px solid var(--line); border-radius:20px; padding:1.5rem 1.6rem; }
+.doc-sec > h2 { font-size:1.35rem; letter-spacing:-.02em; margin:0 0 .9rem; display:flex; align-items:center; gap:.6rem; }
+.doc-sec > h2 .num { display:inline-grid; place-items:center; min-width:2rem; height:2rem; border-radius:10px; background:linear-gradient(135deg,#2563eb,#06b6d4); font:700 .8rem 'JetBrains Mono',monospace; color:#fff; }
+.doc-sec h3 { font-size:1.05rem; color:#e0f2fe; margin:1.2rem 0 .5rem; }
+.doc-sec p, .doc-sec li { color:#c7d2e2; }
+.doc-sec ul, .doc-sec ol { padding-left:1.2rem; } .doc-sec li { margin:.28rem 0; }
+.doc-sec strong { color:#f1f5f9; }
+.formula { margin:1rem 0; padding:.9rem 1rem; border-radius:14px; background:#060d1c; border:1px solid #1e3a5f; border-left:3px solid var(--cyan); overflow-x:auto; }
+.formula .cap { display:block; color:var(--muted); font-size:.76rem; margin-top:.35rem; }
+.callout { margin:1rem 0; padding:.85rem 1rem; border-radius:14px; border:1px solid; font-size:.92rem; }
+.callout.info { border-color:#2563eb66; background:#1d4ed814; } .callout.warn { border-color:#d9770666; background:#d9770612; } .callout.ok { border-color:#05966966; background:#05966912; } .callout.ai { border-color:#7c3aed66; background:#7c3aed12; }
+.callout b:first-child { display:block; margin-bottom:.25rem; color:#fff; }
+.example { margin:1rem 0; border:1px solid #1e3a5f; border-radius:14px; overflow:hidden; }
+.example > .ex-h { padding:.65rem 1rem; background:#0b1a33; font-weight:700; color:#93c5fd; font-size:.88rem; }
+.example > .ex-b { padding:.85rem 1rem; }
+.example details summary { cursor:pointer; color:var(--green); font-weight:700; margin-top:.4rem; }
+table.t { width:100%; border-collapse:collapse; margin:.8rem 0; font-size:.86rem; }
+.tw { overflow-x:auto; }
+table.t th, table.t td { border:1px solid var(--line); padding:.55rem .65rem; text-align:left; vertical-align:top; color:#cbd5e1; }
+table.t th { background:#0b1a33; color:#e0f2fe; font-weight:700; }
+table.t tr:nth-child(even) td { background:#0a1427; }
+.prompt-box { position:relative; margin:.8rem 0; }
+.prompt-box pre { margin:0; white-space:pre-wrap; color:#c4b5fd; font:.78rem/1.6 'JetBrains Mono',monospace; background:#060b16; border:1px solid var(--line); border-radius:12px; padding:1rem; padding-top:2.4rem; }
+.prompt-box .copy { position:absolute; top:.5rem; right:.5rem; font-size:.7rem; padding:.35rem .6rem; }
+pre.code { white-space:pre; overflow-x:auto; color:#a5f3fc; font:.78rem/1.55 'JetBrains Mono',monospace; background:#060b16; border:1px solid var(--line); border-radius:12px; padding:1rem; }
+.quiz .q { margin:1rem 0; padding:1rem; border:1px solid var(--line); border-radius:14px; background:#0a1427; }
+.quiz .q p { margin:0 0 .6rem; color:#f1f5f9; font-weight:600; }
+.quiz label { display:flex; gap:.55rem; align-items:flex-start; padding:.45rem .6rem; border-radius:9px; cursor:pointer; color:#cbd5e1; font-size:.9rem; }
+.quiz label:hover { background:#13213a; }
+.quiz input { margin-top:.3rem; accent-color:var(--cyan); }
+.quiz .fb { display:none; margin-top:.5rem; padding:.55rem .7rem; border-radius:9px; font-size:.85rem; }
+.quiz .q.right .fb { display:block; background:#05966918; border:1px solid #05966966; color:#a7f3d0; }
+.quiz .q.wrong .fb { display:block; background:#e11d4818; border:1px solid #e11d4866; color:#fecdd3; }
+.quiz-result { margin-top:.8rem; font:700 .9rem 'JetBrains Mono',monospace; color:var(--cyan); }
+.sim-box { margin-top:.6rem; }
+.sim-box .sim-layout { grid-template-columns:260px 1fr; }
+.sim-box canvas { aspect-ratio:16/9; min-height:260px; }
+.readout { display:grid; grid-template-columns:1fr auto; gap:.25rem .8rem; font:600 .74rem 'JetBrains Mono',monospace; color:#cbd5e1; padding:.7rem; border:1px solid var(--line); border-radius:10px; background:#081121; }
+.readout b { color:var(--cyan); font-weight:600; text-align:right; }
+.pager { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.pager a { flex:1 1 260px; }
+.pager .next { text-align:right; }
+.acc details { border:1px solid var(--line); border-radius:14px; background:#0a1427; margin:.6rem 0; }
+.acc summary { cursor:pointer; padding:.85rem 1rem; font-weight:700; color:#e2e8f0; list-style:none; display:flex; gap:.6rem; align-items:center; }
+.acc summary::-webkit-details-marker { display:none; }
+.acc summary::before { content:"▸"; color:var(--cyan); transition:.2s; }
+.acc details[open] summary::before { transform:rotate(90deg); }
+.acc .body { padding:0 1rem 1rem; }
+.search { margin:1rem 0; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.kpi { text-align:center; } .kpi .v { font:800 2rem 'JetBrains Mono',monospace; color:var(--cyan); } .kpi .l { color:var(--muted); font-size:.8rem; }
+.tn { font:600 .7rem 'JetBrains Mono',monospace; color:#6ee7b7; }
+.plus { color:#34d399; font-weight:800; text-align:center!important; } .minus { color:#475569; text-align:center!important; }
+.calc-out { font:800 1.6rem 'JetBrains Mono',monospace; color:var(--cyan); }
+.teacher-note { border-left:4px solid var(--amber); }
+.author-avatar { display:grid; place-items:center; aspect-ratio:1; border-radius:20px; background:linear-gradient(135deg,#1d4ed8,#0891b2 60%,#059669); font:800 3.4rem 'JetBrains Mono',monospace; color:#fff; box-shadow:0 12px 30px #0006; }
+.hero-sim { margin-top:2rem; }
+@media(max-width:1000px){ .doc-layout{ grid-template-columns:1fr; } .toc{ position:static; max-height:none; } }
+@media(max-width:700px){ .two{ grid-template-columns:1fr; } .doc-sec{ padding:1.1rem; } .sim-box .sim-layout{ grid-template-columns:1fr; } }
+@media print { .site-header,.toc,.footer,.pager,.sim-box,.copy,.menu-toggle{ display:none!important; } body{ background:#fff; color:#000; } .doc-sec{ border:1px solid #999; background:#fff; break-inside:avoid; } .doc-sec p,.doc-sec li,table.t td{ color:#000; } .doc-layout{ grid-template-columns:1fr; } }
