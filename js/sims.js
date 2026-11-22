@@ -20,8 +20,9 @@
 
   function ctx2d(canvas) {
     const r = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.floor(r.width)), h = Math.max(1, Math.floor(r.height));
+    const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    const dpr = Math.min((window.devicePixelRatio || 1) * zoom, 4);
+    const w = Math.max(1, Math.floor(canvas.clientWidth || r.width)), h = Math.max(1, Math.floor(canvas.clientHeight || r.height));
     if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
     const c = canvas.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
     return { c, w, h };

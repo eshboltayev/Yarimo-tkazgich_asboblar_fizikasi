@@ -174,3 +174,26 @@ body.has-player .footer { padding-bottom:6rem; }
 @media print { .yaf-player, .yaf-here { display:none!important; } }
 .yaf-player[hidden], .yaf-here[hidden] { display:none!important; }
 .yaf-player .pos { white-space:nowrap; }
+/* ===== Moslashuvchanlik: kichik telefon, sensorli ekran, katta elektron doska ===== */
+.katex-display { overflow-x:auto; overflow-y:hidden; padding:.2rem 0 .35rem; max-width:100%; }
+@media(max-width:420px){
+  .site-header .container { width:calc(100% - 1rem); }
+  .navbar { gap:.35rem; }
+  .brand { gap:.45rem; font-size:.72rem; letter-spacing:0; }
+  .brand-mark { width:34px; height:34px; border-radius:11px; }
+  .lang-switch { padding:2px; } .lang-switch button { padding:.3rem .32rem; font-size:.64rem; }
+  .icon-btn { width:32px; height:32px; }
+  .menu-toggle { padding:.5rem .6rem; }
+}
+/* Sensorli ekranlar (telefon, planshet, interaktiv doska): barmoq bilan bosishga qulay o'lchamlar */
+@media(pointer:coarse){
+  input[type=range] { height:32px; }
+  .toc li a { padding:.6rem .6rem; }
+  .quiz label { padding:.7rem .7rem; }
+  .yaf-player button { width:48px; height:48px; } .yaf-player button.main { width:56px; height:56px; }
+  .yaf-here { padding:.6rem .9rem; font-size:.85rem; }
+}
+/* Katta ekranlar va universitet elektron doskalari: butun sayt mutanosib kattalashadi */
+@media(min-width:2000px){ html { zoom:1.25; } }
+@media(min-width:2560px){ html { zoom:1.5; } }
+@media(min-width:3400px){ html { zoom:2; } }
