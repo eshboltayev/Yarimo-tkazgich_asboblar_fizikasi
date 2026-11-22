@@ -153,3 +153,24 @@ body { top:0!important; position:static!important; }
 @media print { .hdr-tools, .hero-tools, .tour-bar, .tour-cap { display:none!important; } }
 [data-theme="light"] .nav-links.open { background:#fff; border-color:#d5deea; }
 [data-theme="light"] .lang-switch button[aria-pressed="true"] { color:#fff; }
+/* Ovozli o'qish paneli va "shu yerdan o'qish" tugmasi */
+.yaf-player { position:fixed; left:50%; bottom:1rem; transform:translateX(-50%); z-index:55; display:flex; align-items:center; gap:.35rem; padding:.45rem .55rem; border-radius:999px; background:rgba(11,26,51,.94); border:1px solid #22d3ee66; box-shadow:0 14px 40px #0009; backdrop-filter:blur(12px); max-width:calc(100vw - 1rem); }
+.yaf-player button { display:grid; place-items:center; width:40px; height:40px; border-radius:50%; border:1px solid #334155; background:#0f1d36; color:#e2e8f0; cursor:pointer; transition:.15s; }
+.yaf-player button:hover { border-color:#22d3ee; color:#fff; }
+.yaf-player button.main { width:48px; height:48px; background:linear-gradient(135deg,#2563eb,#0891b2); border-color:transparent; color:#fff; }
+.yaf-player svg { width:18px; height:18px; }
+.yaf-player .info { display:flex; flex-direction:column; padding:0 .5rem 0 .3rem; line-height:1.25; }
+.yaf-player .pos { color:#67e8f9; font:700 .78rem 'JetBrains Mono',monospace; }
+.yaf-player .hint { color:#94a3b8; font-size:.7rem; max-width:220px; }
+body.has-player .footer { padding-bottom:6rem; }
+.yaf-here { position:absolute; z-index:54; display:inline-flex; align-items:center; gap:.35rem; padding:.42rem .7rem; border-radius:999px; border:0; background:linear-gradient(135deg,#7c3aed,#2563eb); color:#fff; font:700 .74rem Inter,sans-serif; cursor:pointer; box-shadow:0 8px 24px #0007; animation:rise .2s ease both; }
+.yaf-here svg { width:14px; height:14px; }
+.doc-sec p, .doc-sec li, .doc-sec h3 { cursor:text; }
+[data-theme="light"] .yaf-player { background:rgba(255,255,255,.96); border-color:#67e8f9; box-shadow:0 14px 40px #0f172a26; }
+[data-theme="light"] .yaf-player button { background:#f1f5f9; border-color:#cbd5e1; color:#0f172a; }
+[data-theme="light"] .yaf-player button.main { color:#fff; }
+[data-theme="light"] .yaf-player .pos { color:#0e7490; } [data-theme="light"] .yaf-player .hint { color:#475569; }
+@media(max-width:560px){ .yaf-player .hint { display:none; } }
+@media print { .yaf-player, .yaf-here { display:none!important; } }
+.yaf-player[hidden], .yaf-here[hidden] { display:none!important; }
+.yaf-player .pos { white-space:nowrap; }

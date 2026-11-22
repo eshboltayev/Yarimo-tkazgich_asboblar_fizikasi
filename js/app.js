@@ -173,7 +173,7 @@
       });
     }
   }
-  function stopAll() { session++; synth?.cancel(); $$('.reading').forEach(e => e.classList.remove('reading')); $$('.voice-btn.on').forEach(b => { b.classList.remove('on'); const s = $('span', b); if (s && b.dataset.label) s.textContent = b.dataset.label; }); $$('.sim-box.touring').forEach(b => b.classList.remove('touring')); }
+  function stopAll() { session++; synth?.cancel(); if (typeof RD !== 'undefined' && RD.state && RD.state !== 'idle') { RD.state = 'idle'; RD.bi = 0; RD.ci = 0; RD.bar && (RD.bar.hidden = true); document.body.classList.remove('has-player'); } $$('.reading').forEach(e => e.classList.remove('reading')); $$('.voice-btn.on').forEach(b => { b.classList.remove('on'); const s = $('span', b); if (s && b.dataset.label) s.textContent = b.dataset.label; }); $$('.sim-box.touring').forEach(b => b.classList.remove('touring')); }
 
   /* ---- Formulani so'z bilan aytish (TeX → so'zlar) ---- */
   const DICT = {
@@ -245,30 +245,137 @@
     return t.replace(/\s+/g, ' ').trim();
   }
 
-  /* ---- Sahifani o'qish ---- */
-  $$('.voice-btn[data-read]').forEach(b => {
-    b.dataset.label = $('span', b)?.textContent || '';
-    b.addEventListener('click', async () => {
-      if (b.classList.contains('on')) { stopAll(); return; }
-      stopAll(); const sid = session; b.classList.add('on'); const sp = $('span', b); if (sp) sp.textContent = A('To‘xtatish');
-      const secs = (b.dataset.read || '').split(',').map(id => document.getElementById(id)).filter(Boolean);
-      const title = $('.page-hero h1'); const blocks = title ? [title] : [];
-      secs.forEach(sec => $$('h2, h3, p, li, tr, .katex-display', sec).forEach(el => {
-        if (el.closest('.sim-box,.quiz,.prompt-box,.tour-bar,.tour-cap,.vh')) return;
-        if (el.matches('.katex-display') && el.closest('p,li')) return;
-        if (el.matches('p,li,h3') && el.parentElement.closest('li,td')) return;
-        blocks.push(el);
-      }));
-      for (const el of blocks) {
-        if (sid !== session) return;
-        const t = textOf(el); if (!t) continue;
-        $$('.reading').forEach(e => e.classList.remove('reading'));
-        el.classList.add('reading'); el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        await speak(t, sid);
-      }
-      if (sid === session) stopAll();
+  /* ---- Sahifani o'qish: pauza, davom, oldingi/keyingi, istalgan joydan boshlash ---- */
+  const ICON = {
+    prev: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>'
+  };
+  const RD = { blocks: [], bi: 0, ci: 0, state: 'idle', btn: $('.voice-btn[data-read]'), bar: null, chip: null };
+  function collectBlocks() {
+    const b = RD.btn; if (!b) return [];
+    const secs = (b.dataset.read || '').split(',').map(id => document.getElementById(id)).filter(Boolean);
+    const title = $('.page-hero h1'); const out = title ? [title] : [];
+    secs.forEach(sec => $$('h2, h3, p, li, tr, .katex-display', sec).forEach(el => {
+      if (el.closest('.sim-box,.quiz,.prompt-box,.tour-bar,.tour-cap,.vh')) return;
+      if (el.matches('.katex-display') && el.closest('p,li')) return;
+      if (el.matches('p,li,h3') && el.parentElement.closest('li,td')) return;
+      if (el.matches('tr') && el.querySelector('th')) return;
+      out.push(el);
+    }));
+    return out;
+  }
+  function heroLabel() {
+    const sp = RD.btn && $('span', RD.btn); if (!sp) return;
+    sp.textContent = A(RD.state === 'playing' ? 'Pauza' : RD.state === 'paused' ? 'Davom etish' : (RD.btn.dataset.label || 'Tinglash'));
+    RD.btn.classList.toggle('on', RD.state === 'playing');
+  }
+  function ensureBar() {
+    if (RD.bar) return RD.bar;
+    const bar = document.createElement('div'); bar.className = 'yaf-player'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', A('Ovozli o‘qish boshqaruvi'));
+    bar.innerHTML = `<button type="button" data-p="prev" title="${A('Oldingi xatboshi')}" aria-label="${A('Oldingi xatboshi')}">${ICON.prev}</button>`
+      + `<button type="button" data-p="toggle" class="main" title="${A('Pauza / davom etish')}" aria-label="${A('Pauza / davom etish')}">${ICON.pause}</button>`
+      + `<button type="button" data-p="next" title="${A('Keyingi xatboshi')}" aria-label="${A('Keyingi xatboshi')}">${ICON.next}</button>`
+      + `<button type="button" data-p="stop" title="${A('To‘xtatish')}" aria-label="${A('To‘xtatish')}">${ICON.stop}</button>`
+      + `<span class="info"><b class="pos notranslate"></b><span class="hint">${A('Istalgan xatboshini bosing — o‘sha joydan o‘qiladi')}</span></span>`;
+    bar.addEventListener('click', e => {
+      const k = e.target.closest('[data-p]')?.dataset.p; if (!k) return;
+      if (k === 'toggle') (RD.state === 'playing' ? readerPause() : readLoop());
+      else if (k === 'prev') readerJump(RD.bi - 1);
+      else if (k === 'next') readerJump(RD.bi + 1);
+      else if (k === 'stop') readerStop();
     });
-  });
+    document.body.appendChild(bar); RD.bar = bar; return bar;
+  }
+  function updateBar() {
+    const bar = ensureBar(); bar.hidden = RD.state === 'idle';
+    $('[data-p="toggle"]', bar).innerHTML = RD.state === 'playing' ? ICON.pause : ICON.play;
+    $('.pos', bar).textContent = RD.blocks.length ? `${Math.min(RD.bi + 1, RD.blocks.length)} / ${RD.blocks.length}` : '';
+    document.body.classList.toggle('has-player', RD.state !== 'idle');
+    heroLabel();
+  }
+  function mark(el) { $$('.reading').forEach(e => e.classList.remove('reading')); if (el) { el.classList.add('reading'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
+  async function sayChunk(text, v, mode, sid) {
+    if (sid !== session) return;
+    if (!v && !(synth.getVoices() || []).length) { await sleepR(Math.min(text.length * 60, 12000), sid); return; }
+    await new Promise(res => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = v ? v.lang : (mode === 'tr' ? 'tr-TR' : BCP[LANG]); if (v) u.voice = v;
+      u.rate = LANG === 'uz' ? 0.95 : 1;
+      const guard = setTimeout(res, 30000 + text.length * 120);
+      u.onend = u.onerror = () => { clearTimeout(guard); res(); };
+      synth.speak(u);
+    });
+  }
+  const sleepR = (ms, sid) => new Promise(r => { const t0 = Date.now(); const h = setInterval(() => { if (sid !== session || Date.now() - t0 >= ms) { clearInterval(h); r(); } }, 100); });
+  async function readLoop() {
+    if (!synth) { toast(A('Bu brauzer ovozli o‘qishni qo‘llab-quvvatlamaydi. Chrome, Edge yoki Safari’dan foydalaning.')); return; }
+    if (!RD.blocks.length) RD.blocks = collectBlocks();
+    if (RD.bi >= RD.blocks.length) { RD.bi = 0; RD.ci = 0; }
+    session++; synth.cancel(); const sid = session;
+    RD.state = 'playing'; updateBar();
+    const { v, mode } = await pickVoice(LANG);
+    if (LANG === 'uz' && mode !== 'native' && !warned) {
+      warned = true;
+      toast(A(mode === 'tr' ? 'Qurilmada o‘zbekcha ovoz topilmadi — vaqtincha turkcha ovoz ishlatilmoqda. O‘zbekcha tabiiy ovozlar (Madina, Sardor) Microsoft Edge brauzerida mavjud.' : 'Qurilmada o‘zbekcha ovoz topilmadi. Microsoft Edge brauzerida o‘zbekcha tabiiy ovozlar (Madina, Sardor) mavjud.'), 11000);
+    }
+    while (RD.bi < RD.blocks.length) {
+      if (sid !== session) return;
+      const el = RD.blocks[RD.bi]; mark(el); updateBar();
+      let t = textOf(el); if (LANG === 'uz' && mode === 'native') t = AL.toOld(t);
+      const cs = chunks(t);
+      for (; RD.ci < cs.length; RD.ci++) { if (sid !== session) return; await sayChunk(cs[RD.ci], v, mode, sid); }
+      if (sid !== session) return;
+      RD.ci = 0; RD.bi++;
+    }
+    readerStop();
+  }
+  function readerPause() { if (RD.state !== 'playing') return; session++; synth?.cancel(); RD.state = 'paused'; updateBar(); }
+  function readerJump(i) {
+    if (!RD.blocks.length) RD.blocks = collectBlocks();
+    RD.bi = Math.max(0, Math.min(i, RD.blocks.length - 1)); RD.ci = 0;
+    if (RD.state === 'paused') { mark(RD.blocks[RD.bi]); updateBar(); return; }
+    readLoop();
+  }
+  function readerStop() { session++; synth?.cancel(); RD.state = 'idle'; RD.bi = 0; RD.ci = 0; mark(null); updateBar(); }
+  RD.stop = readerStop;
+
+  if (RD.btn) {
+    RD.btn.dataset.label = $('span', RD.btn)?.textContent || '';
+    RD.btn.addEventListener('click', () => {
+      if (RD.state === 'playing') readerPause();
+      else if (RD.state === 'paused') readLoop();
+      else { stopAll(); RD.blocks = collectBlocks(); RD.bi = 0; RD.ci = 0; readLoop(); }
+    });
+    // Istalgan xatboshidan o'qish: xatboshini bosing → "Shu yerdan o'qish"
+    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'yaf-here'; chip.hidden = true;
+    chip.innerHTML = `${ICON.play}<span>${A('Shu yerdan o‘qish')}</span>`; document.body.appendChild(chip); RD.chip = chip;
+    let target = -1;
+    document.addEventListener('click', e => {
+      if (e.target.closest('.yaf-here,.yaf-player')) return;
+      chip.hidden = true;
+      if (e.target.closest('a,button,input,select,label,summary,textarea,.sim-box,.quiz')) return;
+      if (String(window.getSelection?.() || '').length > 2) return;
+      if (!RD.blocks.length) RD.blocks = collectBlocks();
+      const el = e.target.closest('h1, h2, h3, p, li, tr, .katex-display');
+      let i = el ? RD.blocks.indexOf(el) : -1;
+      if (i < 0 && el) i = RD.blocks.findIndex(b => b.contains(el) || el.contains(b));
+      if (i < 0) return;
+      target = i;
+      const r = RD.blocks[i].getBoundingClientRect();
+      chip.style.top = `${window.scrollY + r.top - 40}px`;
+      chip.style.left = `${Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 200))}px`;
+      chip.hidden = false;
+    });
+    chip.addEventListener('click', () => {
+      chip.hidden = true; if (target < 0) return;
+      if (RD.state === 'idle') { stopAll(); RD.blocks = collectBlocks(); }
+      RD.bi = target; RD.ci = 0; readLoop();
+    });
+    window.addEventListener('keydown', e => { if (e.key === 'Escape' && RD.state !== 'idle') readerStop(); });
+  }
 
   /* ---- Modellarning ovozli avtomatik namoyishi ---- */
   const sleep = ms => new Promise(r => setTimeout(r, ms));
