@@ -6,7 +6,7 @@ MT = [
  ("Garmonik yaqinlashuvda kristall panjara tebranishlari", ["Bir o‘lchamli atomlar zanjiri, dispersiya \\(\\omega(k)\\)", "Davriy chegaraviy shartlar", "Normal modalar soni"], [1, 1]),
  ("Tebranishlarning akustik va optik tarmoqlari", ["Ikki atomli zanjir", "Akustik va optik tarmoqlar fizik ma’nosi", "Raman va IQ spektroskopiya bilan bog‘liqlik"], [1, 1]),
  ("Fononlar tushunchasi. Issiqlik sig‘imi nazariyasi", ["Fonon — kvazizarracha", "Eynshteyn va Debay modellari, \\(C\\propto T^3\\)", "Debay harorati va yarimo‘tkazgichlar issiqlik o‘tkazuvchanligi"], [1, 1]),
- ("Davriy maydonda harakatlanayotgan elektron uchun Shredinger tenglamasini yechish", ["Bloch funksiyalari", "Kuchsiz bog‘lanish va kuchli bog‘lanish yaqinlashuvlari", "Sonli yechim: chekli ayirmalar (Python)"], [1, 3]),
+ ("Davriy maydonda harakatlanayotgan elektron uchun Shredinger tenglamasini yechish", ["Blox funksiyalari", "Kuchsiz bog‘lanish va kuchli bog‘lanish yaqinlashuvlari", "Sonli yechim: chekli ayirmalar (Python)"], [1, 3]),
  ("Dielektriklardagi hodisalar. Dielektrik buzilish va teshilish", ["Qutblanish turlari, \\(\\varepsilon(\\omega)\\)", "Elektr, issiqlik va elektrokimyoviy teshilish", "MDYa oksidining TDDB ishonchliligi"], [1, 1]),
  ("Yarimo‘tkazgichlardagi nuqsonlar va ularning turlari", ["Nuqtaviy (vakansiya, tugunlararo), chiziqli (dislokatsiya), hajmiy nuqsonlar", "Shottki va Frenkel nuqsonlari", "Nuqsonlarni aniqlash usullari (DLTS, PL)"], [1, 5]),
  ("Nuqsonlarning paydo bo‘lish sabablari va yarimo‘tkazgich xossalariga ta’siri", ["O‘stirish, implantatsiya, radiatsiya", "Chuqur sathlar va SRH rekombinatsiya", "Umr va diffuziya uzunligiga ta’siri"], [1, 5]),

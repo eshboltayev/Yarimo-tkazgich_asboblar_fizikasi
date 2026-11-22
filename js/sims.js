@@ -5,6 +5,7 @@
   'use strict';
   const q = 1.602e-19, kB = 8.617e-5, eps0 = 8.854e-14, epsSi = 11.7 * eps0, epsOx = 3.9 * eps0;
   const Vt = T => kB * T;
+  const A = s => (window.YAF_ALIF ? window.YAF_ALIF.A(s) : String(s));
   const C = { cyan:'#22d3ee', green:'#34d399', amber:'#fbbf24', rose:'#fb7185', violet:'#a78bfa', blue:'#60a5fa', grid:'#1e2c44', axis:'#64748b', text:'#cbd5e1' };
   const SUP = { '-':'⁻', '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
   const sci = (v, d = 2) => {
@@ -52,8 +53,8 @@
     c.strokeStyle = C.axis; c.strokeRect(px, py, pw, ph);
     if (!o.logy && o.yr[0] < 0 && o.yr[1] > 0) { c.strokeStyle = '#475569'; c.beginPath(); c.moveTo(px, Y(0)); c.lineTo(px + pw, Y(0)); c.stroke(); }
     if (!o.logx && o.xr[0] < 0 && o.xr[1] > 0) { c.strokeStyle = '#475569'; c.beginPath(); c.moveTo(X(0), py); c.lineTo(X(0), py + ph); c.stroke(); }
-    c.fillStyle = C.text; c.textAlign = 'center'; c.fillText(o.xl || '', px + pw / 2, py + ph + 30);
-    c.textAlign = 'left'; c.fillText(o.yl || '', px, py - 8);
+    c.fillStyle = C.text; c.textAlign = 'center'; c.fillText(A(o.xl || ''), px + pw / 2, py + ph + 30);
+    c.textAlign = 'left'; c.fillText(A(o.yl || ''), px, py - 8);
     c.beginPath(); c.rect(px, py, pw, ph); c.clip();
     (o.fill || []).forEach(f => { c.fillStyle = f.c; c.beginPath(); f.pts.forEach(([x, y], i) => (i ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y)))); c.closePath(); c.fill(); });
     (o.series || []).forEach(s => {
@@ -61,18 +62,18 @@
       s.pts.forEach(([x, y]) => { if (!isFinite(y) || !isFinite(x) || (o.logy && y <= 0) || (o.logx && x <= 0)) { started = false; return; } const xx = X(x), yy = Y(y); if (!started) { c.moveTo(xx, yy); started = true; } else c.lineTo(xx, yy); });
       c.stroke(); c.setLineDash([]);
     });
-    (o.vl || []).forEach(v => { c.strokeStyle = v.c || C.amber; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(X(v.x), py); c.lineTo(X(v.x), py + ph); c.stroke(); c.setLineDash([]); if (v.l) { c.fillStyle = v.c || C.amber; c.fillText(v.l, X(v.x) + 4, py + 12); } });
-    (o.hl || []).forEach(v => { c.strokeStyle = v.c || C.amber; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, Y(v.y)); c.lineTo(px + pw, Y(v.y)); c.stroke(); c.setLineDash([]); if (v.l) { c.fillStyle = v.c || C.amber; c.fillText(v.l, px + 6, Y(v.y) - 5); } });
-    (o.marks || []).forEach(m => { c.fillStyle = m.c || '#fff'; c.beginPath(); c.arc(X(m.x), Y(m.y), m.r || 5, 0, 7); c.fill(); if (m.l) { c.fillText(m.l, X(m.x) + 8, Y(m.y) - 8); } });
+    (o.vl || []).forEach(v => { c.strokeStyle = v.c || C.amber; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(X(v.x), py); c.lineTo(X(v.x), py + ph); c.stroke(); c.setLineDash([]); if (v.l) { c.fillStyle = v.c || C.amber; c.fillText(A(v.l), X(v.x) + 4, py + 12); } });
+    (o.hl || []).forEach(v => { c.strokeStyle = v.c || C.amber; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(px, Y(v.y)); c.lineTo(px + pw, Y(v.y)); c.stroke(); c.setLineDash([]); if (v.l) { c.fillStyle = v.c || C.amber; c.fillText(A(v.l), px + 6, Y(v.y) - 5); } });
+    (o.marks || []).forEach(m => { c.fillStyle = m.c || '#fff'; c.beginPath(); c.arc(X(m.x), Y(m.y), m.r || 5, 0, 7); c.fill(); if (m.l) { c.fillText(A(m.l), X(m.x) + 8, Y(m.y) - 8); } });
     c.restore();
     if ((o.legend || []).length) { c.fillStyle = 'rgba(3,7,18,.82)'; c.fillRect(px + pw - 156, py + 2, 152, o.legend.length * 16 + 8); }
-    (o.legend || []).forEach((g, i) => { c.font = '11px Inter, sans-serif'; c.fillStyle = g.c; c.fillRect(px + pw - 150, py + 8 + i * 16, 12, 3); c.fillStyle = C.text; c.textAlign = 'left'; c.fillText(g.l, px + pw - 133, py + 13 + i * 16); });
+    (o.legend || []).forEach((g, i) => { c.font = '11px Inter, sans-serif'; c.fillStyle = g.c; c.fillRect(px + pw - 150, py + 8 + i * 16, 12, 3); c.fillStyle = C.text; c.textAlign = 'left'; c.fillText(A(g.l), px + pw - 133, py + 13 + i * 16); });
     return { X, Y };
   }
   const fmtTick = t => (Math.abs(t) >= 1000 || (Math.abs(t) < .01 && t !== 0) ? sci(t, 1) : String(+t.toFixed(3)));
   const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
   const lin = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
-  const label = (c, t, x, y, col = C.text, al = 'left') => { c.fillStyle = col; c.font = '12px Inter, sans-serif'; c.textAlign = al; c.fillText(t, x, y); };
+  const label = (c, t, x, y, col = C.text, al = 'left') => { c.fillStyle = col; c.font = '12px Inter, sans-serif'; c.textAlign = al; c.fillText(A(t), x, y); };
 
   const MAT = {
     Si: { Eg0: 1.17, a: 4.73e-4, b: 636, Nc: 3.2e19, Nv: 1.8e19, eps: 11.7 },
@@ -496,13 +497,13 @@
     const key = box.dataset.sim, sim = S[key]; if (!sim) return;
     const id = `${key}-${Math.random().toString(36).slice(2, 7)}`;
     const ctrls = sim.params.map(p => {
-      if (p.type === 'sel') return `<label class="control">${p.l}<select data-k="${p.k}">${p.opts.map(o => `<option${o === p.v ? ' selected' : ''}>${o}</option>`).join('')}</select></label>`;
-      return `<label class="control">${p.l} <output data-o="${p.k}"></output><input type="range" data-k="${p.k}" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.v}"></label>`;
+      if (p.type === 'sel') return `<label class="control">${A(p.l)}<select data-k="${p.k}">${p.opts.map(o => `<option value="${o}"${o === p.v ? ' selected' : ''}>${A(o)}</option>`).join('')}</select></label>`;
+      return `<label class="control">${A(p.l)} <output data-o="${p.k}"></output><input type="range" data-k="${p.k}" min="${p.min}" max="${p.max}" step="${p.step}" value="${p.v}"></label>`;
     }).join('');
-    box.innerHTML = `<div class="sim-layout"><div class="card controls"><h3>${sim.title}</h3>${ctrls}<div class="actions"><button class="secondary" type="button" data-reset>Boshlang‘ich qiymatlar</button></div><div class="readout" aria-live="polite"></div></div><div class="card canvas-card"><div class="toolbar"><span>${sim.title}</span><span class="stat">model · 300 K · Si</span></div><canvas id="${id}" role="img" aria-label="${sim.title} grafigi"></canvas></div></div>`;
+    box.innerHTML = `<div class="sim-layout"><div class="card controls"><h3>${A(sim.title)}</h3>${ctrls}<div class="actions"><button class="secondary" type="button" data-reset>${A('Boshlang‘ich qiymatlar')}</button></div><div class="readout" aria-live="polite"></div></div><div class="card canvas-card"><div class="toolbar"><span>${A(sim.title)}</span><span class="stat notranslate">model · 300 K · Si</span></div><canvas id="${id}" role="img" aria-label="${A(sim.title)}"></canvas></div></div>`;
     const cv = box.querySelector('canvas'), ro = box.querySelector('.readout');
     const read = () => { const P = {}; box.querySelectorAll('[data-k]').forEach(el => { const p = sim.params.find(x => x.k === el.dataset.k); P[p.k] = p.type === 'sel' ? el.value : (p.log ? 10 ** +el.value : +el.value); const o = box.querySelector(`[data-o="${p.k}"]`); if (o) o.textContent = p.log ? sci(10 ** +el.value, 1) : (+el.value).toString(); }); return P; };
-    const render = (dt) => { const r = sim.draw(cv, read(), dt || 0); ro.innerHTML = Object.entries(r || {}).map(([k, v]) => `<span>${k}</span><b>${v}</b>`).join(''); };
+    const render = (dt) => { const r = sim.draw(cv, read(), dt || 0); ro.innerHTML = Object.entries(r || {}).map(([k, v]) => `<span>${A(k)}</span><b>${A(v)}</b>`).join(''); };
     box.addEventListener('input', () => render()); box.addEventListener('change', () => render());
     box.querySelector('[data-reset]').addEventListener('click', () => { box.querySelectorAll('[data-k]').forEach(el => { const p = sim.params.find(x => x.k === el.dataset.k); el.value = p.v; }); render(); });
     window.addEventListener('resize', () => render());

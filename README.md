@@ -22,6 +22,16 @@ Darslik 2026/2027 o‘quv yili uchun tasdiqlangan fan dasturi asosida tayyorlang
 
 Har bir ma’ruzada: maqsad va TN, reja, nazariya (formulalar), ishlangan misol, interaktiv model, SI bilan ishlash topshirig‘i, tipik xatolar, o‘z-o‘zini tekshirish testi, blits-savollar, adabiyotlar va o‘qituvchi uchun 80 daqiqalik dars rejasi.
 
+## 2-versiyadagi imkoniyatlar
+
+- **Yangi o‘zbek alifbosi** (O‘RQ-1184, 2026: O‘→Ö, G‘→Ğ, Sh→Ş, Ch→Ç) — barcha sahifalar avtomatik o‘tkaziladi (`gen/alifbo.py`, `js/alifbo.js`). Manba matnlar eski imloda saqlanadi.
+- **Kun / tun rejimi** — tanlov brauzerda eslab qolinadi.
+- **UZ / RU / EN** — Google Translate orqali butun sayt, testlar bilan birga; Google paneli yashirilgan. Tarjima sifati uchun matn tarjimadan oldin eski imloga qaytariladi.
+- **Tinglash** — har bir mavzuni tanlangan tilda ovozli o‘qish, formulalar so‘z bilan aytiladi.
+- **Ovozli namoyish** — har bir interaktiv model parametrlarni o‘zi o‘zgartirib tushuntiradi (`gen/tours.py`), so‘ng boshqaruv talabaga o‘tadi.
+- Ovoz brauzerning o‘zidagi **Web Speech API** orqali ishlaydi: API kalit, server va to‘lov talab qilinmaydi. O‘zbekcha tabiiy ovozlar Microsoft Edge brauzerida mavjud.
+- Har bir ma’ruzada **10 savolli test** (`gen/quiz_extra.py`).
+
 ## GitHub Pages’da ochish
 
 Settings → Pages → Source: **Deploy from a branch**, Branch: **main**, Folder: **/ (root)** → Save.

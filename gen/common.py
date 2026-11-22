@@ -47,7 +47,9 @@ INTL = {
     "tsividis": "Tsividis Y., McAndrew C. Operation and Modeling of the MOS Transistor. 3rd ed. — Oxford University Press, 2011.",
 }
 
+HEAD_JS = r"""<script>(function(){var d=document.documentElement;try{d.dataset.theme=localStorage.getItem('yaf-theme')||'dark';}catch(e){d.dataset.theme='dark';}var m=document.cookie.match(/googtrans=\/uz\/(ru|en)/);if(m){d.classList.add('alif-old');d.dataset.tl=m[1];}})();</script>"""
 esc = _h.escape
+INTL = {k: f'<span lang="en">{v}</span>' for k, v in INTL.items()}
 
 
 def head(title, desc, katex=True, extra_css=True):
@@ -65,6 +67,8 @@ def head(title, desc, katex=True, extra_css=True):
 <meta name="author" content="{AUTHOR_FULL}">
 <meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}"><meta property="og:type" content="website">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+{HEAD_JS}
+<script src="js/alifbo.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 {'<link rel="stylesheet" href="css/darslik.css">' if extra_css else ''}
 {k}</head>
@@ -76,7 +80,7 @@ def head(title, desc, katex=True, extra_css=True):
 def header(active=""):
     links = "".join(
         f'<a href="{h}"{" aria-current=\"page\"" if h == active else ""}>{t}</a>' for h, t in NAV)
-    return f"""<header class="site-header"><div class="container navbar"><a class="brand" href="index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><span>YARIMO‘TKAZGICH ASBOBLAR FIZIKASI<small>Interaktiv elektron darslik · Magistratura</small></span></a><nav class="nav-links" aria-label="Asosiy navigatsiya">{links}</nav><button class="menu-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false">☰</button></div></header>
+    return f"""<header class="site-header"><div class="container navbar"><a class="brand" href="index.html"><span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><span>YARIMO‘TKAZGICH ASBOBLAR FIZIKASI<small>Interaktiv elektron darslik · Magistratura</small></span></a><nav class="nav-links" aria-label="Asosiy navigatsiya">{links}</nav><div class="hdr-tools notranslate" translate="no"><div class="lang-switch" role="group" aria-label="Til / Язык / Language"><button type="button" data-lang="uz">UZ</button><button type="button" data-lang="ru">RU</button><button type="button" data-lang="en">EN</button></div><button class="icon-btn theme-btn" type="button" aria-label="Kun va tun rejimini almashtirish" title="Kun / tun rejimi"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></div><button class="menu-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false">☰</button></div></header>
 """
 
 
@@ -88,10 +92,14 @@ def footer(sims=False):
 """
 
 
-def hero(crumbs, badge, title, lead="", chips=()):
+SPEAKER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>'
+
+
+def hero(crumbs, badge, title, lead="", chips=(), read=None):
     cr = " / ".join(f'<a href="{h}">{t}</a>' if h else f"<span>{t}</span>" for h, t in crumbs)
     ch = "".join(f'<span class="chip {cls}">{t}</span>' for cls, t in chips)
-    return f"""<section class="page-hero"><div class="container"><nav class="crumbs" aria-label="Yo‘l">{cr}</nav><div class="eyebrow" style="margin-top:1rem">{badge}</div><h1>{title}</h1>{f'<p class="lead">{lead}</p>' if lead else ''}<div class="chips">{ch}</div></div></section>
+    tools = f'<div class="hero-tools"><button class="voice-btn" type="button" data-read="{read}" aria-label="Mavzuni ovozli tinglash">{SPEAKER}<span>Tinglash</span></button></div>' if read else ""
+    return f"""<section class="page-hero"><div class="container">{tools}<nav class="crumbs" aria-label="Yo‘l">{cr}</nav><div class="eyebrow" style="margin-top:1rem">{badge}</div><h1>{title}</h1>{f'<p class="lead">{lead}</p>' if lead else ''}<div class="chips">{ch}</div></div></section>
 """
 
 
