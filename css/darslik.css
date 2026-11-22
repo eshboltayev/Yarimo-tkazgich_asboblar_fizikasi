@@ -148,7 +148,7 @@ body { top:0!important; position:static!important; }
 /* Asbob ekrani (grafiklar) har ikki rejimda ham qorong'i qoladi */
 [data-theme="light"] .canvas-card { background:#0b1222; border-color:#1e293b; color:#cbd5e1; }
 [data-theme="light"] .canvas-card .toolbar { color:#cbd5e1; }
-@media(max-width:1180px){ .hdr-tools { margin-left:auto; } }
+@media(max-width:1440px){ .hdr-tools { margin-left:auto; } }
 @media(max-width:640px){ .hero-tools { position:static; margin-bottom:.8rem; } .lang-switch button { padding:.32rem .38rem; } .brand small { display:none; } }
 @media print { .hdr-tools, .hero-tools, .tour-bar, .tour-cap { display:none!important; } }
 [data-theme="light"] .nav-links.open { background:#fff; border-color:#d5deea; }
@@ -197,3 +197,12 @@ body.has-player .footer { padding-bottom:6rem; }
 @media(min-width:2000px){ html { zoom:1.25; } }
 @media(min-width:2560px){ html { zoom:1.5; } }
 @media(min-width:3400px){ html { zoom:2; } }
+
+/* Bosh sahifa: sarlavha markazda */
+.hero > .container > .eyebrow, .hero > .container > h1, .hero > .container > .lead { text-align:center; margin-left:auto; margin-right:auto; }
+.hero > .container > h1 { max-width:1000px; text-wrap:balance; }
+.hero > .container > .lead { text-wrap:pretty; }
+.hero::after { right:auto; left:50%; top:50%; width:44rem; height:44rem; transform:translate(-50%,-55%); }
+@keyframes driftc { from { transform:translate(-50%,-55%) scale(1); } to { transform:translate(-50%,-48%) scale(1.08); } }
+.hero::after { animation:driftc 10s ease-in-out infinite alternate; }
+.hero .grid-4 .card { text-align:left; }
