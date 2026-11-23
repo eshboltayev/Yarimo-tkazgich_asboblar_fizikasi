@@ -154,6 +154,7 @@
     return out;
   }
   async function speak(text, sid) {
+    if (LANG === 'uz') { const url = await mp3For(uzSpeech(text)); if (sid !== session) return; if (url && (await playMp3(url, sid)) !== 'err') return 'mp3'; }
     if (!synth) { toast(A('Bu brauzer ovozli o‘qishni qo‘llab-quvvatlamaydi. Chrome, Edge yoki Safari’dan foydalaning.')); return; }
     const { v, mode } = await pickVoice(LANG);
     if (LANG === 'uz' && mode !== 'native' && !warned) {
@@ -161,7 +162,7 @@
       toast(A(mode === 'tr' ? 'Qurilmada o‘zbekcha ovoz topilmadi — vaqtincha turkcha ovoz ishlatilmoqda. O‘zbekcha tabiiy ovozlar (Madina, Sardor) Microsoft Edge brauzerida mavjud.' : 'Qurilmada o‘zbekcha ovoz topilmadi. Microsoft Edge brauzerida o‘zbekcha tabiiy ovozlar (Madina, Sardor) mavjud; telefonda esa matnni ovozga aylantirish sozlamalarini tekshiring.'), 11000);
     }
     if (!v && !(synth.getVoices() || []).length) { await new Promise(r => setTimeout(r, Math.min(text.length * 60, 12000))); return; }
-    const say = LANG === 'uz' && mode === 'native' ? AL.toOld(text) : text;
+    const say = LANG === 'uz' && mode === 'native' ? uzSpeech(text) : text;
     for (const c of chunks(say)) {
       if (sid !== session) return;
       await new Promise(res => {
@@ -173,7 +174,7 @@
       });
     }
   }
-  function stopAll() { session++; synth?.cancel(); if (typeof RD !== 'undefined' && RD.state && RD.state !== 'idle') { RD.state = 'idle'; RD.bi = 0; RD.ci = 0; RD.bar && (RD.bar.hidden = true); document.body.classList.remove('has-player'); } $$('.reading').forEach(e => e.classList.remove('reading')); $$('.voice-btn.on').forEach(b => { b.classList.remove('on'); const s = $('span', b); if (s && b.dataset.label) s.textContent = b.dataset.label; }); $$('.sim-box.touring').forEach(b => b.classList.remove('touring')); }
+  function stopAll() { session++; synth?.cancel(); if (typeof audioStop === 'function') audioStop(); if (typeof RD !== 'undefined' && RD.state && RD.state !== 'idle') { RD.state = 'idle'; RD.bi = 0; RD.ci = 0; RD.bar && (RD.bar.hidden = true); document.body.classList.remove('has-player'); } $$('.reading').forEach(e => e.classList.remove('reading')); $$('.voice-btn.on').forEach(b => { b.classList.remove('on'); const s = $('span', b); if (s && b.dataset.label) s.textContent = b.dataset.label; }); $$('.sim-box.touring').forEach(b => b.classList.remove('touring')); }
 
   /* ---- Formulani so'z bilan aytish (TeX → so'zlar) ---- */
   const DICT = {
@@ -220,7 +221,13 @@
         else out.push(name);
         continue;
       }
-      if (c === '^') { i++; const g = group(); out.push(g === '2' ? W.sq : g === '3' ? W.cube : `${W.pow} ${tex2words(g, lang)}`); continue; }
+      if (c === '^') {
+        i++; const g = group();
+        if (g === '2') out.push(W.sq); else if (g === '3') out.push(W.cube);
+        else if (lang === 'uz') { const e = tex2words(g, lang); const simple = /^(minus )?[A-Za-z0-9]{1,3}$/.test(e); const b = out.pop() || ''; out.push(`${b} ning ${e}${simple ? '-darajasi' : ' darajasi'},`); }
+        else out.push(`${W.pow} ${tex2words(g, lang)}`);
+        continue;
+      }
       if (c === '_') { i++; out.push(tex2words(group(), lang)); continue; }
       if (c === '{' || c === '}') { i++; continue; }
       if (c === '=') out.push(W.eq); else if (c === '+') out.push(W.plus); else if (c === '-' || c === '−') out.push(W.minus);
@@ -239,11 +246,92 @@
       else if (n.nodeType === 1) {
         if (n.classList.contains('katex')) { const a = n.querySelector('annotation'); t += ' ' + (a ? tex2words(a.textContent, LANG) : n.textContent) + ' '; }
         else if (n.classList.contains('num')) t += '';
+        else if (n.tagName === 'SUP') t += '^{' + n.textContent + '}';
+        else if (n.tagName === 'SUB') t += ' ' + n.textContent + ' ';
         else if (!/^(BUTTON|SCRIPT|STYLE|INPUT|SELECT|CANVAS)$/.test(n.tagName)) t += textOf(n) + (/^(P|LI|TD|TH|H2|H3|DIV)$/.test(n.tagName) ? '. ' : '');
       }
     });
     return t.replace(/\s+/g, ' ').trim();
   }
+
+  /* ---- O'zbekcha neyron ovoz: oldindan tayyorlangan MP3 (barcha qurilmalarda bir xil) ---- */
+  const SUPD = { '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁻': '-' };
+  const UNIT = { eV: 'elektron-volt', meV: 'millielektron-volt', keV: 'kiloelektron-volt', mA: 'milliamper', mkA: 'mikroamper', nA: 'nanoamper', pA: 'pikoamper', kA: 'kiloamper', A: 'amper', mV: 'millivolt', kV: 'kilovolt', mkV: 'mikrovolt', V: 'volt', mVt: 'millivatt', mkVt: 'mikrovatt', kVt: 'kilovatt', Vt: 'vatt', K: 'kelvin', Om: 'om', kOm: 'kiloom', MOm: 'megaom', mOm: 'milliom', mkm: 'mikrometr', nm: 'nanometr', mm: 'millimetr', sm: 'santimetr', km: 'kilometr', m: 'metr', ns: 'nanosekund', ps: 'pikosekund', fs: 'femtosekund', mks: 'mikrosekund', ms: 'millisekund', s: 'sekund', Hz: 'gers', kHz: 'kilogers', Gs: 'gers', kGs: 'kilogers', MGs: 'megagers', GGs: 'gigagers', TGs: 'teragers', mS: 'millisimens', S: 'simens', MHz: 'megagers', GHz: 'gigagers', THz: 'teragers', pF: 'pikofarad', nF: 'nanofarad', mkF: 'mikrofarad', F: 'farad', dB: 'detsibel', Gy: 'grey', rad: 'rad', T: 'tesla', W: 'vatt', Pa: 'paskal', J: 'joul', C: 'kulon' };
+  const DEN = ['', 'o‘ndan', 'yuzdan', 'mingdan', 'o‘n mingdan', 'yuz mingdan', 'milliondan'];
+  const LET = { a: 'a', b: 'be', c: 'se', d: 'de', e: 'e', f: 'ef', g: 'ge', h: 'ha', i: 'i', j: 'je', k: 'ka', l: 'el', m: 'em', n: 'en', p: 'pe', q: 'ku', r: 'er', s: 'es', t: 'te', v: 've', w: 'dubl-ve', x: 'iks', y: 'igrek', z: 'zet' };
+  const MULTI = { ox: 'oks', kT: 'ka te', qV: 'ku ve', qN: 'ku en', qn: 'ku en', qE: 'ku e', Fn: 'ef en', Fp: 'ef pe', max: 'maks', VAX: 'volt-amper xarakteristika', VAXi: 'volt-amper xarakteristikasi', VAXini: 'volt-amper xarakteristikasini', VAXlari: 'volt-amper xarakteristikalari', VAXda: 'volt-amper xarakteristikada' };
+  const UGR = { 'α': 'alfa', 'β': 'beta', 'γ': 'gamma', 'δ': 'delta', 'Δ': 'delta', 'ε': 'epsilon', 'η': 'eta', 'θ': 'teta', 'λ': 'lyambda', 'μ': 'myu', 'ν': 'nyu', 'π': 'pi', 'ρ': 'ro', 'σ': 'sigma', 'τ': 'tau', 'φ': 'fi', 'Φ': 'fi', 'χ': 'xi', 'ψ': 'psi', 'ω': 'omega', 'Ω': 'om', 'ħ': 'h chiziqli', '∞': 'cheksizlik', '±': 'plyus-minus', '∝': 'proporsional', '·': ' ko‘paytirilgan ' };
+  const UPL = { a: 'a', b: 'be', c: 'se', d: 'de', e: 'e', f: 'ef', g: 'ge', h: 'ha', i: 'i', j: 'je', k: 'ka', l: 'el', m: 'em', n: 'en', o: 'o', p: 'pe', q: 'qu', r: 'er', s: 'es', t: 'te', u: 'u', v: 've', w: 'dubl-ve', x: 'xa', y: 'ye', z: 'ze', ya: 'ya', yu: 'yu', ch: 'che', sh: 'sha' };
+  const KEEP = new Set(['MOSFET', 'SPICE', 'MATLAB', 'NASA', 'GaAs', 'SiGe', 'InGaN', 'GaN', 'InP', 'SiC', 'AlGaAs', 'InAs', 'GaP', 'ZnO', 'Si', 'Ge', 'Al', 'Au', 'Pt', 'Ti', 'Ni', 'Cu', 'Ag', 'Th', 'Fermi', 'Python', 'Multisim', 'LTspice', 'ngspice']);
+  function spell(w) {
+    const parts = w.match(/Ya|Yu|Ch|Sh|\d+|[A-Za-z]/g) || [];
+    let out = '', prevNum = false;
+    parts.forEach((x, i) => { const num = /^\d/.test(x); out += (i ? (num || prevNum ? ' ' : '-') : '') + (num ? x : UPL[x.toLowerCase()]); prevNum = num; });
+    return out;
+  }
+  function normUz(t) {
+    t = t.replace(/[αβγδΔεηθλμνπρσφΦχψωΩħ∞±∝]/g, c => ' ' + UGR[c] + ' ');
+    let s = ' ' + t.replace(/^\s*\d+(\.\d+)+\.?\s+/, '') + ' ';
+    s = s.replace(/\(\s*[–−-]\s*\)/g, '(manfiy)').replace(/\(\s*\+\s*\)/g, '(musbat)').replace(/(^|[\s(=])[−–-](\d)/g, '$1minus $2').replace(/−/g, ' minus ');
+    s = s.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+)/g, m => '^{' + [...m].map(c => SUPD[c]).join('') + '}');
+    // birliklar: ko'p harfli birlik daraja oldidan yoki "ning" oldidan; har qanday birlik son ortidan
+    s = s.replace(/(^|[\s(\/·])([A-Za-z]{2,4})(?=\^\{| ning |\s*bo‘lingan)/g, (m, p, u) => UNIT[u] ? p + UNIT[u] : m);
+    s = s.replace(/(\d|\}|kvadrat|kub|kvadrati|kubi|darajasi,?)(\s*)([A-Za-z]{1,4})(?=[\s.,;:)\/^]|$)/g, (m, d, sp, u) => UNIT[u] && (sp || u.length > 1) ? `${d} ${UNIT[u]}` : m);
+    s = s.replace(/\/(\s*)([A-Za-z]{1,4})(?=[\s.,;:)^]|$)/g, (m, sp, u) => UNIT[u] ? '/' + UNIT[u] : m);
+    s = s.replace(/(\S+)\^\{2\}/g, '$1 kvadrat').replace(/(\S+)\^\{3\}/g, '$1 kub');
+    s = s.replace(/(\S+)\^\{(-?)(\d+)\}/g, (m, b, mn, e) => `${b} ning ${mn ? 'minus ' : ''}${e}-darajasi`);
+    s = s.replace(/(\d)\s*[·×]\s*(\d)/g, '$1 ko‘paytirilgan $2');
+    s = s.replace(/(\d)\s*%/g, '$1 foiz').replace(/(\d)\s*°C/g, '$1 gradus Selsiy').replace(/(\d)\s*°/g, '$1 gradus');
+    s = s.replace(/(\d+),(\d+)/g, (m, a, b) => b.length < DEN.length ? `${a} butun ${DEN[b.length]} ${parseInt(b, 10)}` : m);
+    s = s.replace(/(\d)\s*[–—-]\s*(\d)/g, '$1 dan $2 gacha');
+    s = s.replace(/\s*\/\s*/g, ' bo‘lingan ').replace(/\s*=\s*/g, ' teng ').replace(/\s*≈\s*/g, ' taxminan ').replace(/\s*→\s*/g, ', keyin ').replace(/\s*[≤]\s*/g, ' kichik yoki teng ').replace(/\s*[≥]\s*/g, ' katta yoki teng ');
+    // harfiy belgilar (o'zgaruvchilar) odam o'qiganidek: V → ve, kT → ka te, p-n → pe-en
+    s = s.replace(/(^|[\s(,\/–-])([A-Za-z][A-Za-z0-9]{0,6})(?=[\s),.;:\/–-]|$)/g, (m, p, w) => {
+      if (MULTI[w]) return p + MULTI[w];
+      if (w.length === 1 && !/[uoUO]/.test(w)) return p + LET[w.toLowerCase()];
+      if (/^[a-zA-Z]\d$/.test(w)) return p + LET[w[0].toLowerCase()] + ' ' + w[1];
+      if (KEEP.has(w)) return m;
+      const sf = w.match(/^((?:[A-Z]|Ya|Yu|Ch|Sh){2,})(ning|ni|da|dan|dagi|ga|lar|larda|lari|larini|larni|lardan|i|idan|ining|ini|ida)$/);
+      if (sf && !KEEP.has(sf[1])) return p + (sf[1] === 'VAX' ? 'volt-amper xarakteristika' + sf[2].replace(/^i/, 'si') : spell(sf[1]) + '-' + sf[2]);
+      if (sf) return m;
+      if (/^(?:[A-Z]|Ya|Yu|Ch|Sh)(?:[A-Z]|Ya|Yu|Ch|Sh|\d)+$/.test(w) || /^[a-z]{1,2}[A-Z][A-Za-z]?$/.test(w)) return p + spell(w);
+      return m;
+    });
+    s = s.replace(/\s*[—–]\s*/g, ', ').replace(/[«»“”"]/g, '').replace(/\s+([,.;:!?])/g, '$1').replace(/([,.;:])\1+/g, '$1').replace(/\.\s*\./g, '.').replace(/\s{2,}/g, ' ');
+    return s.trim();
+  }
+  function h32(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+  const uzSpeech = t => normUz(AL.toOld(t));
+  const TTS = { base: 'audio/uz/', set: null, el: null, bi: -1 };
+  const ttsReady = (LANG === 'uz' && window.fetch ? fetch(TTS.base + 'manifest.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).catch(() => ({})) : Promise.resolve({}))
+    .then(j => { TTS.set = new Set(j.files || []); });
+  async function mp3For(text) { if (LANG !== 'uz') return null; await ttsReady; const k = h32(text); return TTS.set.has(k) ? `${TTS.base}${k}.mp3` : null; }
+  function audioEl() { if (!TTS.el) { TTS.el = new Audio(); TTS.el.preload = 'auto'; } return TTS.el; }
+  function prefetch(url) { if (url && window.fetch) fetch(url).catch(() => {}); }
+  // url ni ijro etadi; resume=true bo'lsa to'xtagan joyidan davom etadi. 'end' | 'stop' | 'err'
+  function playMp3(url, sid, resume) {
+    const a = audioEl();
+    return new Promise(res => {
+      let fin = false; const done = r => { if (fin) return; fin = true; clearInterval(h); a.onended = a.onerror = null; res(r); };
+      if (!resume || !a.src.endsWith(url)) { a.src = url; a.currentTime = 0; }
+      a.onended = () => done('end'); a.onerror = () => done('err');
+      const h = setInterval(() => { if (sid !== session) { a.pause(); done('stop'); } }, 100);
+      const p = a.play(); if (p && p.catch) p.catch(() => done('err'));
+    });
+  }
+  function audioStop() { if (TTS.el) { TTS.el.pause(); } TTS.bi = -1; }
+  // Ovoz matnlarini yig'ish (GitHub Actions dagi generator uchun)
+  window.YAF_TTS = {
+    h32, normUz,
+    items() {
+      const out = [];
+      const add = t => { const s = uzSpeech(t); if (s.replace(/[^A-Za-z0-9‘’']/g, '').length > 1) out.push({ h: h32(s), t: s }); };
+      if (RD.btn) collectBlocks().forEach(el => add(textOf(el)));
+      $$('.tour-steps li').forEach(li => add(textOf(li)));
+      add(A('Namoyish tugadi. Endi parametrlarni o‘zingiz o‘zgartirib ko‘ring — natijalar darhol yangilanadi.'));
+      return out;
+    }
+  };
 
   /* ---- Sahifani o'qish: pauza, davom, oldingi/keyingi, istalgan joydan boshlash ---- */
   const ICON = {
@@ -299,6 +387,7 @@
   function mark(el) { $$('.reading').forEach(e => e.classList.remove('reading')); if (el) { el.classList.add('reading'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }
   async function sayChunk(text, v, mode, sid) {
     if (sid !== session) return;
+    if (!synth) { await sleepR(Math.min(text.length * 60, 12000), sid); return; }
     if (!v && !(synth.getVoices() || []).length) { await sleepR(Math.min(text.length * 60, 12000), sid); return; }
     await new Promise(res => {
       const u = new SpeechSynthesisUtterance(text);
@@ -311,20 +400,32 @@
   }
   const sleepR = (ms, sid) => new Promise(r => { const t0 = Date.now(); const h = setInterval(() => { if (sid !== session || Date.now() - t0 >= ms) { clearInterval(h); r(); } }, 100); });
   async function readLoop() {
-    if (!synth) { toast(A('Bu brauzer ovozli o‘qishni qo‘llab-quvvatlamaydi. Chrome, Edge yoki Safari’dan foydalaning.')); return; }
+    if (!synth && LANG !== 'uz') { toast(A('Bu brauzer ovozli o‘qishni qo‘llab-quvvatlamaydi. Chrome, Edge yoki Safari’dan foydalaning.')); return; }
     if (!RD.blocks.length) RD.blocks = collectBlocks();
     if (RD.bi >= RD.blocks.length) { RD.bi = 0; RD.ci = 0; }
-    session++; synth.cancel(); const sid = session;
+    session++; synth?.cancel(); const sid = session;
     RD.state = 'playing'; updateBar();
     const { v, mode } = await pickVoice(LANG);
-    if (LANG === 'uz' && mode !== 'native' && !warned) {
+    await ttsReady;
+    if (LANG === 'uz' && mode !== 'native' && !warned && !TTS.set.size) {
       warned = true;
       toast(A(mode === 'tr' ? 'Qurilmada o‘zbekcha ovoz topilmadi — vaqtincha turkcha ovoz ishlatilmoqda. O‘zbekcha tabiiy ovozlar (Madina, Sardor) Microsoft Edge brauzerida mavjud.' : 'Qurilmada o‘zbekcha ovoz topilmadi. Microsoft Edge brauzerida o‘zbekcha tabiiy ovozlar (Madina, Sardor) mavjud.'), 11000);
     }
     while (RD.bi < RD.blocks.length) {
       if (sid !== session) return;
       const el = RD.blocks[RD.bi]; mark(el); updateBar();
-      let t = textOf(el); if (LANG === 'uz' && mode === 'native') t = AL.toOld(t);
+      const raw = textOf(el);
+      if (LANG === 'uz') {
+        const url = await mp3For(uzSpeech(raw));
+        if (sid !== session) return;
+        if (url) {
+          const nx = RD.blocks[RD.bi + 1]; if (nx) mp3For(uzSpeech(textOf(nx))).then(prefetch);
+          const r = await playMp3(url, sid, TTS.bi === RD.bi); TTS.bi = RD.bi;
+          if (sid !== session) return;
+          if (r !== 'err') { RD.ci = 0; RD.bi++; TTS.bi = -1; continue; }
+        }
+      }
+      let t = raw; if (LANG === 'uz' && mode === 'native') t = uzSpeech(t);
       const cs = chunks(t);
       for (; RD.ci < cs.length; RD.ci++) { if (sid !== session) return; await sayChunk(cs[RD.ci], v, mode, sid); }
       if (sid !== session) return;
@@ -332,14 +433,14 @@
     }
     readerStop();
   }
-  function readerPause() { if (RD.state !== 'playing') return; session++; synth?.cancel(); RD.state = 'paused'; updateBar(); }
+  function readerPause() { if (RD.state !== 'playing') return; const keep = TTS.bi; session++; synth?.cancel(); TTS.el?.pause(); RD.state = 'paused'; TTS.bi = keep; updateBar(); }
   function readerJump(i) {
     if (!RD.blocks.length) RD.blocks = collectBlocks();
-    RD.bi = Math.max(0, Math.min(i, RD.blocks.length - 1)); RD.ci = 0;
+    RD.bi = Math.max(0, Math.min(i, RD.blocks.length - 1)); RD.ci = 0; TTS.bi = -1;
     if (RD.state === 'paused') { mark(RD.blocks[RD.bi]); updateBar(); return; }
     readLoop();
   }
-  function readerStop() { session++; synth?.cancel(); RD.state = 'idle'; RD.bi = 0; RD.ci = 0; mark(null); updateBar(); }
+  function readerStop() { session++; synth?.cancel(); audioStop(); RD.state = 'idle'; RD.bi = 0; RD.ci = 0; mark(null); updateBar(); }
   RD.stop = readerStop;
 
   if (RD.btn) {
@@ -372,7 +473,7 @@
     chip.addEventListener('click', () => {
       chip.hidden = true; if (target < 0) return;
       if (RD.state === 'idle') { stopAll(); RD.blocks = collectBlocks(); }
-      RD.bi = target; RD.ci = 0; readLoop();
+      RD.bi = target; RD.ci = 0; TTS.bi = -1; readLoop();
     });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && RD.state !== 'idle') readerStop(); });
   }
@@ -411,13 +512,13 @@
         await animateTo(box, set);
         const t = textOf(li); cap.textContent = li.textContent.trim();
         const ro = $('.readout', box); ro?.classList.add('reading');
-        const t0 = performance.now(); await speak(t, sid);
-        const need = t.length * 55 - (performance.now() - t0); if (need > 0 && sid === session && !synth?.speaking) await sleep(Math.min(need, 9000));
+        const t0 = performance.now(); const how = await speak(t, sid);
+        const need = t.length * 55 - (performance.now() - t0); if (how !== 'mp3' && need > 0 && sid === session && !synth?.speaking) await sleep(Math.min(need, 9000));
         ro?.classList.remove('reading'); await sleep(450);
       }
-      if (sid === session) { stopAll(); cap.textContent = A('Namoyish tugadi. Endi parametrlarni o‘zingiz o‘zgartirib ko‘ring — natijalar darhol yangilanadi.'); }
+      if (sid === session) { const fin = A('Namoyish tugadi. Endi parametrlarni o‘zingiz o‘zgartirib ko‘ring — natijalar darhol yangilanadi.'); cap.textContent = fin; await speak(fin, sid); if (sid === session) { stopAll(); cap.textContent = fin; } }
     });
   });
-  window.addEventListener('pagehide', () => synth?.cancel());
+  window.addEventListener('pagehide', () => { synth?.cancel(); TTS.el?.pause(); });
   if (synth) getVoices();
 })();

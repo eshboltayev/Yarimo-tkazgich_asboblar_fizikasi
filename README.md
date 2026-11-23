@@ -32,6 +32,14 @@ Har bir ma’ruzada: maqsad va TN, reja, nazariya (formulalar), ishlangan misol,
 - Ovoz brauzerning o‘zidagi **Web Speech API** orqali ishlaydi: API kalit, server va to‘lov talab qilinmaydi. O‘zbekcha tabiiy ovozlar Microsoft Edge brauzerida mavjud.
 - Har bir ma’ruzada **10 savolli test** (`gen/quiz_extra.py`).
 
+## O‘zbekcha neyron ovoz (barcha qurilmalarda bir xil)
+
+O‘zbekcha "Tinglash" va modellarning ovozli namoyishi oldindan tayyorlangan MP3 fayllardan (`audio/uz/`) ijro etiladi — qurilmada o‘zbek ovozi bo‘lishi shart emas, telefon, kompyuter va elektron doskada bir xil tabiiy ovoz eshitiladi. Formulalar, darajalar (10¹⁶ → "o‘nning o‘n oltinchi darajasi"), o‘nli kasrlar ("0,77" → "nol butun yuzdan yetmish yetti"), birliklar va qisqartmalar odam o‘qiganidek so‘zga aylantiriladi.
+
+- MP3 lar GitHub Actions (`.github/workflows/ovoz.yml`) orqali avtomatik yaratiladi: sahifa o‘zgarsa, faqat o‘zgargan xatboshilar qayta ovozlanadi (Microsoft Edge neyron ovozi, API kalit talab qilinmaydi).
+- Ovozni almashtirish: Actions → "Ovoz (o‘zbekcha MP3)" → Run workflow → `uz-UZ-SardorNeural` (erkak) yoki `uz-UZ-MadinaNeural` (ayol).
+- MP3 hali tayyor bo‘lmagan xatbosh uchun brauzerning o‘z ovozi ishlatiladi. Rus va ingliz tillarida brauzer ovozi (Chrome/Edge’da Google va Microsoft ovozlari) ishlatiladi.
+
 ## GitHub Pages’da ochish
 
 Settings → Pages → Source: **Deploy from a branch**, Branch: **main**, Folder: **/ (root)** → Save.

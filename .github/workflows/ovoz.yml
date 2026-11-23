@@ -1,0 +1,73 @@
+# O'zbekcha neyron ovozli MP3 fayllarni avtomatik tayyorlaydi.
+# Sahifalar yoki ovoz mantiqi o'zgarganda ishga tushadi: faqat yangi/o'zgargan xatboshilar ovozlanadi.
+# Qo'lda ishga tushirish: Actions → "Ovoz (o'zbekcha MP3)" → Run workflow.
+name: Ovoz (o'zbekcha MP3)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'js/app.js'
+      - 'js/alifbo.js'
+      - 'tools/tts_*.py'
+      - '.github/workflows/ovoz.yml'
+  workflow_dispatch:
+    inputs:
+      voice:
+        description: "Ovoz: uz-UZ-SardorNeural (erkak) yoki uz-UZ-MadinaNeural (ayol)"
+        default: "uz-UZ-SardorNeural"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: ovoz
+  cancel-in-progress: false
+
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TTS_VOICE: ${{ github.event.inputs.voice || 'uz-UZ-SardorNeural' }}
+      TTS_RATE: "-4%"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Kutubxonalar
+        run: |
+          pip install "edge-tts>=7" playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Ovoz matnlarini yig'ish
+        run: python tools/tts_extract.py . audio/uz/texts.json
+
+      - name: Ovoz o'zgargan bo'lsa eski fayllarni tozalash
+        run: |
+          if [ -f audio/uz/manifest.json ] && ! grep -q "\"voice\":\"$TTS_VOICE\"" audio/uz/manifest.json; then
+            echo "Ovoz almashtirildi — barcha MP3 qayta yaratiladi"; rm -f audio/uz/*.mp3
+          fi
+
+      - name: MP3 yaratish
+        run: python tools/tts_generate.py audio/uz
+
+      - name: Saqlash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A audio/uz
+          if git diff --cached --quiet; then echo "O'zgarish yo'q"; exit 0; fi
+          git commit -m "Ovoz: o'zbekcha MP3 fayllar yangilandi"
+          for i in 1 2 3; do git pull --rebase -X theirs origin main && git push && break; sleep 5; done
+
+      - name: Saytni yangilash
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
