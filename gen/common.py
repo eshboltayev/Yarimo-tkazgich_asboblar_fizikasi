@@ -69,8 +69,8 @@ def head(title, desc, katex=True, extra_css=True):
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 {HEAD_JS}
 <script src="js/alifbo.js"></script>
-<link rel="stylesheet" href="css/styles.css">
-{'<link rel="stylesheet" href="css/darslik.css">' if extra_css else ''}
+<link rel="stylesheet" href="css/styles.css?v=5">
+{'<link rel="stylesheet" href="css/darslik.css?v=5">' if extra_css else ''}
 {k}</head>
 <body>
 <a class="skip-link" href="#main">Asosiy mazmunga o‘tish</a>
