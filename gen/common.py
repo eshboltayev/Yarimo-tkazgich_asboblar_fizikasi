@@ -69,8 +69,8 @@ def head(title, desc, katex=True, extra_css=True):
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 {HEAD_JS}
 <script src="js/alifbo.js"></script>
-<link rel="stylesheet" href="css/styles.css?v=5">
-{'<link rel="stylesheet" href="css/darslik.css?v=5">' if extra_css else ''}
+<link rel="stylesheet" href="css/styles.css?v=6">
+{'<link rel="stylesheet" href="css/darslik.css?v=6">' if extra_css else ''}
 {k}</head>
 <body>
 <a class="skip-link" href="#main">Asosiy mazmunga o‘tish</a>
@@ -87,7 +87,7 @@ def header(active=""):
 def footer(sims=False):
     return f"""<footer class="footer"><div class="container">{SITE} — ochiq elektron darslik · Qo‘qon davlat universiteti, Fizika va astronomiya kafedrasi · 2026 · Muallif: <a href="index.html#muallif">{AUTHOR}</a> · Litsenziya: <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.uz" rel="license">CC BY-SA 4.0</a><br>Rasmiy topshiriqlar va baholash faqat HEMIS axborot tizimida yuritiladi.</div></footer>
 {'<script src="js/sims.js" defer></script>' if sims else ''}
-<script src="js/app.js" defer></script>
+<script src="js/app.js?v=6" defer></script>
 </body></html>
 """
 

@@ -223,3 +223,10 @@ body.has-player .footer { padding-bottom:6rem; }
 @media (min-width:2500px) { html { zoom:1.6; } }
 @media (min-width:3000px) { html { zoom:1.9; } }
 @media (min-width:3600px) { html { zoom:2.4; } }
+
+/* VOICE-DOCK: ekranning o'ng tomonida qotirilgan ovoz tugmasi — sahifa siljisa ham joyidan qo'zg'almaydi */
+.voice-dock { position:fixed; right:1.2rem; bottom:22vh; z-index:58; padding:.8rem 1.1rem; font-size:.85rem; box-shadow:0 10px 30px rgba(2,8,23,.35); }
+.voice-dock svg { width:22px; height:22px; }
+.voice-dock:hover { transform:translateY(-2px); }
+@media (max-width:700px) { .voice-dock { right:.7rem; bottom:5.5rem; padding:.7rem; } .voice-dock span { display:none; } }
+@media print { .voice-dock { display:none !important; } }

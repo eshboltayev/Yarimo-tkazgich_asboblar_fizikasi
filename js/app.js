@@ -522,3 +522,23 @@
   window.addEventListener('pagehide', () => { synth?.cancel(); TTS.el?.pause(); });
   if (synth) getVoices();
 })();
+
+/* VOICE-DOCK: pastki o'ng burchakda qotirilgan "Tinglash" tugmasi (elektron doska uchun).
+   Yuqoridagi tugmaning aynan nusxasi: bosilganda o'shani bosadi, holati avtomatik sinxronlanadi. */
+(() => {
+  const top = document.querySelector('.voice-btn[data-read]');
+  if (!top) return;
+  const dock = document.createElement('button');
+  dock.type = 'button'; dock.className = 'voice-btn voice-dock';
+  dock.setAttribute('aria-label', top.getAttribute('aria-label') || 'Tinglash');
+  dock.setAttribute('translate', 'no');
+  const sync = () => {
+    dock.innerHTML = top.innerHTML;
+    dock.classList.toggle('on', top.classList.contains('on'));
+    dock.title = (top.querySelector('span')?.textContent || '').trim();
+  };
+  sync();
+  new MutationObserver(sync).observe(top, { attributes: true, childList: true, subtree: true, characterData: true });
+  dock.addEventListener('click', e => { e.stopPropagation(); top.click(); });
+  document.body.appendChild(dock);
+})();
